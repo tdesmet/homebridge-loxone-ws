@@ -158,6 +158,7 @@ WSListener.prototype.scheduleCommandBufferPoll = function() {
         var data =that.commandsBuffer.shift();
         if (data) {
             that.ws.send_cmd(data.uuid, data.command);
+            that.scheduleCommandBufferPoll();
         }
     }, this.backoffTime);
 };

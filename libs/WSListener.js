@@ -10,11 +10,15 @@ var WSListener = function(platform) {
     this.port = platform.port;
     this.username = platform.username;
     this.password = platform.password;
+    this.backoffTime = platform.backoffTime;
 
     this.uuidCallbacks = [];
 
     // cache of the last value of any uuid received via the websocket
     this.uuidCache = [];
+
+    this.commandsBuffer = [];
+    this.pollScheduled = false;
 
     this.startListener();
 };
@@ -137,11 +141,25 @@ WSListener.prototype.registerListenerForUUID = function (uuid, callback) {
 };
 
 WSListener.prototype.sendCommand = function (uuid, command) {
-    this.ws.send_cmd(uuid, command);
+    this.commandsBuffer.push({uuid: uuid, command: command});
+    this.scheduleCommandBufferPoll();
 };
 
 WSListener.prototype.getLastCachedValue = function (uuid) {
     return this.uuidCache[uuid];
+};
+
+WSListener.prototype.scheduleCommandBufferPoll = function() {
+    if (this.pollScheduled === true) return;
+    this.pollScheduled = true;
+    var that = this;
+    setTimeout(function() {
+        that.pollScheduled = false;
+        var data =that.commandsBuffer.shift();
+        if (data) {
+            that.ws.send_cmd(data.uuid, data.command);
+        }
+    }, this.backoffTime);
 };
 
 module.exports = WSListener;

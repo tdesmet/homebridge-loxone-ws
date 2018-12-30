@@ -60,13 +60,19 @@ function LoxPlatform(log, config) {
         this.rooms = config["rooms"];
     } else {
         this.rooms =[];
-    } 
+    }
 	this.log(typeof this.rooms);
     if (this.config['moodSwitches']) {
         this.moodSwitches = config["moodSwitches"];
     } else {
         this.moodSwitches = 'none';
-    } 
+    }
+
+    if (this.config['backoffTime']) {
+        this.backoffTime = parseInt(config["backoffTime"], 10);
+    } else {
+        this.backoffTime = 250;
+    }
 
     //Also make a WS connection
     this.ws = new WSListener(platform);
